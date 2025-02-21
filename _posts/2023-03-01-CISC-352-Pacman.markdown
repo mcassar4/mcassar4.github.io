@@ -1,0 +1,149 @@
+---
+layout: post  
+title: "Ghostbusters AI Project"  
+date: 2025-02-09 12:00:00 +0500  
+description: "Developing intelligent agents to hunt invisible ghosts in the Ghostbusters Pacman variant."  
+img: ../img/ghostbusters/thumb.png  
+tags: [AI, Pacman, Inference, Probabilistic Models]  
+
+---
+# Ghostbusters AI: Developing Intelligent Agents to Hunt Ghosts  
+
+## Introduction  
+
+In this project, I implemented various probabilistic AI techniques to design intelligent agents for the Ghostbusters variant of Pacman. The agents rely on noisy sensor readings to locate and capture invisible ghosts. The assignment required leveraging belief distributions, dynamic inference, and movement prediction algorithms. This report provides an overview of the implemented features, challenges encountered, and the final outcomes.  
+
+---
+
+## Role and Responsibilities  
+
+I was responsible for implementing the following key components:  
+
+- **Discrete Distribution Management**: Designed methods to normalize and sample from distributions using noisy sensor data.  
+- **Exact Inference**: Developed algorithms to track ghosts' positions dynamically using observations and movement predictions.  
+- **Greedy Hunting Strategy**: Implemented a Pacman agent that aggressively pursues ghosts based on probabilistic belief maps.  
+
+The project involved editing and integrating functionalities into `bustersAgents.py`, `solutions.py`, and `inference.py`, while utilizing supporting modules like `busters.py`, `ghostAgents.py`, and `game.py`.  
+
+---
+
+## Technical Implementation  
+
+### 1. **Discrete Distribution Class**  
+
+I extended the `DiscreteDistribution` class to model belief distributions over ghost positions. Key features included:  
+
+- **Normalization**: Ensured probabilities in the distribution summed to one while maintaining proportionality.  
+- **Sampling**: Allowed random sampling from distributions, weighted by the probability of each key.  
+
+```python
+def normalize(self):
+    total = self.total()
+    if total == 0:
+        return
+    for key, val in self.items():
+        self[key] = val / total
+```
+
+```python
+def sample(self):
+    dist = self.copy()
+    normalize(dist)
+    cumTotal = [0] * (len(dist) + 1)
+    for i in range(1, len(cumTotal)):
+        cumTotal[i] = cumTotal[i - 1] + list(dist.values())[i - 1]
+    r = random.random()
+    for i in range(len(cumTotal) - 1):
+        if cumTotal[i] <= r < cumTotal[i + 1]:
+            return list(self.keys())[i]
+```
+
+### 2. **Observation and Time Elapse**  
+
+#### Observation Update  
+
+The `observeUpdate` function updates beliefs based on noisy Manhattan distance readings. The belief for each position is updated using the observation probability.  
+
+```python
+def observeUpdate(self, observation, gameState):
+    for position in self.allPositions:
+        pObservation = self.getObservationProb(
+            observation,
+            gameState.getPacmanPosition(),
+            position,
+            self.getJailPosition()
+        )
+        self.beliefs[position] *= pObservation
+    self.beliefs.normalize()
+```
+
+#### Time Elapse  
+
+The `elapseTime` function predicted beliefs for the next time step based on the ghost's possible movements. Transition probabilities were calculated using the provided `getPositionDistribution` function.  
+
+```python
+def elapseTime(self, gameState):
+    newBeliefs = self.beliefs.copy()
+    for newPos in self.allPositions:
+        newProb = 0
+        for oldPos in self.allPositions:
+            transitionProb = self.getPositionDistribution(gameState, oldPos)[newPos]
+            newProb += self.beliefs[oldPos] * transitionProb
+        newBeliefs[newPos] = newProb
+    self.beliefs = newBeliefs
+    self.beliefs.normalize()
+```
+
+### 3. **Greedy Hunting Strategy**  
+
+The `GreedyBustersAgent` selects actions that minimize the distance to the closest ghost based on belief distributions.  
+
+```python
+def chooseAction(self, gameState):
+    pacmanPosition = gameState.getPacmanPosition()
+    legal = gameState.getLegalPacmanActions()
+    ghostPositions = [
+        beliefs.argMax() for beliefs in self.ghostBeliefs if beliefs
+    ]
+    distances = {
+        action: min(
+            self.distancer.getDistance(
+                Actions.getSuccessor(pacmanPosition, action), ghostPos
+            )
+            for ghostPos in ghostPositions
+        )
+        for action in legal
+    }
+    return min(distances, key=distances.get)
+```
+
+---
+
+## Results  
+
+The implemented agents successfully located and captured ghosts in various scenarios:  
+
+1. **Belief Distribution Accuracy**: The agents dynamically updated belief distributions based on observations and movements, achieving high accuracy in ghost location predictions.  
+2. **Efficiency**: The greedy strategy led Pacman to capture ghosts efficiently, often exceeding the score benchmarks in the provided tests.  
+3. **Scalability**: The solutions handled multiple ghosts and complex layouts effectively.  
+
+---
+
+## Challenges and Solutions  
+
+### Handling Noisy Observations  
+
+The noisy sensor readings introduced uncertainty in the inference process. By normalizing belief distributions and incorporating robust probability calculations, the agents adapted to varying levels of noise.  
+
+### Optimization of Transition Models  
+
+Calculating transition probabilities for all positions was computationally expensive. To optimize, I reused intermediate results and minimized redundant calculations.  
+
+---
+
+## Conclusion  
+
+This project highlighted the power of probabilistic inference in AI. By implementing dynamic belief tracking and greedy strategies, I developed intelligent agents capable of navigating uncertainty and achieving their goals. The experience reinforced my understanding of probabilistic models, dynamic programming, and AI-driven decision-making.  
+
+---
+
