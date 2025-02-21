@@ -1,0 +1,25 @@
+posts:
+  - title: "Minecraft Server Entrepreneurship"
+    filename: "2014-05-01-PlanetPiplup.markdown"
+    interest: 1
+  - title: "Q23 FSAE CAN Architecture"
+    filename: "2022-09-30-Q23FSAECAN.markdown"
+    interest: 2
+  - title: "Payload Delivery Mechanism for a Drone"
+    filename: "2024-02-02-dronedrop.markdown"
+    interest: 3
+  - title: "Cagey CSP Solver for Constraint Satisfaction Problems"
+    filename: "2023-01-01-CISC352-Cagey.markdown"
+    interest: 4
+  - title: "Understanding DNS: Building a Client"
+    filename: "2025-02-21-dnsClient.markdown"
+    interest: 5
+  - title: "Ghostbusters AI Project"
+    filename: "2023-03-01-CISC-352-pacman.markdown"
+    interest: 6
+  - title: "Evolutionary Optimization: Minimizing the Ackley Function"
+    filename: "2025-02-09-evolutionaryAlgorithm.markdown"
+    interest: 7
+  - title: "PDDL Dungeon: Treasure Hunter AI"
+    filename: "2023-01-01-CISC352-PDDLDungeon.markdown"
+    interest: 8
