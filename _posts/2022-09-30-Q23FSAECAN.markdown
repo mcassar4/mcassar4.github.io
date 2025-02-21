@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "FSAE CAN Architecture"
+title: "Q23 FSAE CAN Architecture"
 date: 2022-09-30 12:00:00 +0500
 description: "Exploring the development of the software interface for the PDM15 CAN communication out QFSAE racecar."
 img: ../img/qfsae2023/thumb.png
