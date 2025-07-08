@@ -2,7 +2,7 @@
 layout: post
 title: "Minecraft Server Entrepreneurship"
 date: 2014-07-04 12:00:00 +0500
-description: "My first foray into running an online business by managing a multiplayer Minecraft server."
+description: "My first foray into running an online business by creating a multiplayer Minecraft server."
 img: ../img/minecraftServer/thumb.png
 tags: [Java, Servers, Entrepreneurship]
 ---
@@ -38,24 +38,24 @@ What initially started as a fun experiment turned into a bustling community. Pla
 
 ### Building an Immersive Environment
 - **World Design:** Created visually stunning and engaging worlds that encouraged exploration and play. From lush Pokémon-inspired landscapes to carefully crafted towns, every detail was designed to immerse players in the server's unique theme.
-- **Redstone Mechanisms:** Built intricate Redstone-powered features for activities like the BossPits, where players would engage in challenging encounters powered by custom circuits and mechanics.
+- **Redstone Mechanisms:** Built intricate Redstone-powered logic circuits for activities like the BossPits, where players would engage in challenging encounters powered by custom circuits and mechanics.
 - **Customization:** Offered players unique kits and features in a tiered pricing model, giving them a head start and further personalizing their experience on the server.
 
 ### Marketing and Revenue
 - **Community Building:** Advertised the server on hosting platforms, Minecraft forums, and social media to attract players and foster engagement.
-- **E-commerce Integration:** Designed a custom in-game shop where players could purchase exclusive items, generating over $1,000 in revenue within the first few months.
+- **E-commerce Integration:** Designed a custom in-game shop where players could purchase exclusive items, generating over $1,000 in revenue within the first month.
 - **Trend Analysis:** Capitalized on the Pokémon-Minecraft crossover trend, positioning my server as a unique and timely offering.
 
 ### Team Building
-- **Hiring and Training:** Recruited and trained a 5-person team of moderators and support staff to handle player inquiries, monitor the server, and maintain its quality.
-- **Collaboration:** Worked with server management companies to ensure smooth operation and scalability, while maintaining direct communication with developers and hosting providers.
+- **Hiring and Training:** Recruited and trained a 5-person team of moderators and support staff to handle player inquiries, monitor the server, and maintain its quality and customer engagement.
+- **Scaling Infrasctructure:** As the server gained traction, I had to move my hosting from my computer onto dedicated servers, leading to negotiation and collaboration with server management companies to ensure smooth operation and scalability.
 
 ---
 
 ## Implementation Details
 
 ### Coding and Development
-- **Plugin Development:** Wrote Java-based plugins to enable custom gameplay features, from boss challenges to integrated payment systems.
+- **Plugin Development:** Wrote Java-based plugins to enable custom gameplay features, from new experiences like boss challenges to an integrated payment system.
 - **Payment Integration:** Developed an e-commerce system that linked in-game purchases with PayPal, allowing players to buy items and perks seamlessly.
 - **Website Creation:** Designed a website using HTML and CSS, integrating server statistics, payment options, and community forums.
 
@@ -85,7 +85,7 @@ What initially started as a fun experiment turned into a bustling community. Pla
 
 ### Key Takeaways
 - **Technical Growth:** Gained expertise in server management, plugin development, and e-commerce integration.
-- **Crafting Experience:** Engaging with my users to see what they wanted rove my business.
+- **Crafting Experience:** Engaging with my users to see what they wanted and liked from my business.
 - **Entrepreneurial Mindset:** Learned the importance of identifying market opportunities, creating scalable solutions, and delivering value to users.
 - **Leadership Skills:** Built and led a team, fostering collaboration and ensuring smooth operations.
 
