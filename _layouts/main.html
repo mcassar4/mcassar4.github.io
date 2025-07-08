@@ -11,12 +11,14 @@ layout: default
       <div class="author-name">{{site.author}}</div>
       <p>{{site.about-author}}</p>
     </div>
+    {% if page.layout == "main" %}
     <div id="sort-wrapper">
       <div id="sort-controls">
         <button onclick="sortProjects('chronological')">Order Chronologically</button>
         <button onclick="sortProjects('interest')">Order by Interest/Impact</button>
       </div>
     </div>
+    {% endif %}
   </header> <!-- End Header -->
   <footer>
     <section class="contact">
