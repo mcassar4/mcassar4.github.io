@@ -7,8 +7,6 @@ img: ../img/minecraftServer/thumb.png
 tags: [Java, Servers, Entrepreneurship]
 ---
 
-# Building a Multiplayer Minecraft Server: A Journey in Entrepreneurship
-
 ## Introduction
 
 In 2014, at just 12 years old, I embarked on a project that taught me invaluable lessons about computing, entrepreneurship, and perseverance. I created and managed an online multiplayer Minecraft Java server, [Planet Piplup Pixelmon](https://www.planetminecraft.com/server/planet-piplup-pixelmon-2886331/). What started as a simple hobby soon grew into a thriving online business.
