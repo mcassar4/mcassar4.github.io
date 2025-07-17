@@ -84,14 +84,30 @@ hr {
  * 2. Correct the odd `em` font sizing in all browsers.
  */
 pre {
-  /* background-color: #1e1e1e; /* Dark background for code blocks */
+  background-color: #2e2e2e;
   color: #8fa7cf; /* Light text color */
   padding: 1rem 2rem;
   overflow: auto;
   white-space: pre-wrap;
   word-wrap: break-word;
   word-break: break-all;
-} */
+}
+
+.highlight,
+.highlighter-rouge {
+  background-color: #2e2e2e;
+}
+
+pre code {
+  background-color: transparent;
+  border: 0;
+  padding-right: 0;
+  padding-left: 0;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  word-break: break-all;
+}
 
 /* Text-level semantics
    ========================================================================== */
@@ -440,13 +456,14 @@ template {
 }
 
 .highlight {
-  background-color: #faf9f9;
+  background-color: #2e2e2e;
   -webkit-border-radius: 3px;
           border-radius: 3px;
   margin: 0;
 }
 
 .highlighter-rouge {
+  background-color: #2e2e2e;
   color: #ce887b;
   font-weight: 400;
   border: 1px solid #607D8B;
@@ -811,24 +828,6 @@ blockquote {
   color: #ada8a8;
 }
 
-pre {
-  padding: 1rem 2rem;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  word-break: break-all;
-}
-
-pre code {
-  border: 0;
-  padding-right: 0;
-  padding-left: 0;
-  overflow: auto;
-  white-space: pre-wrap;
-  word-wrap: break-word;
-  word-break: break-all;
-}
-
 table {
   background-color: #1e1e1e; /* Dark table background */
   color: #dcdcdc; /* Light text color */
@@ -1027,6 +1026,12 @@ table tfoot td {
       -ms-flex-align: stretch;
           align-items: stretch;
   background-color: #1e1e1e;
+}
+
+/* override hyperlink color in post and page content */
+.content-box a,
+.content-box a:visited {
+  color: #8fa7cf;
 }
 
 .contact .contact-title {
