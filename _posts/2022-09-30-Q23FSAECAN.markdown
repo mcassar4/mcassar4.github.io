@@ -1,19 +1,17 @@
 ---
 layout: post
-title: "Q23 FSAE CAN Architecture"
+title: "Q23 FSAE Controller Area Network Software Architecture"
 date: 2022-09-30 12:00:00 +0500
-description: "Exploring the development of the software interface for the PDM15 CAN communication out QFSAE racecar."
+description: "Establishing communication with the power distribution module over CAN for our QFSAE racecar."
 img: ../img/qfsae2023/thumb.png
 tags: [FSAE, CAN, Software Development]
 ---
 
-# Developing a Software Interface for Power Distribution Module CAN Communication
-
 ## Introduction
 
-In the 2023 FSAE Season as a member of Queen's Formula, I contributed in the design, development, and implementation of the software interface to integrate the MoTeC PDM15 with our racecar’s Controller Area Network (CAN). This module was responsible for distributing power to critical systems and reading sensor values. My work focused on early development and of the C++ library, which was further built ontop of and refined by other team members integrating CAN from the ECU and a custom STM32 dashboard PCB. In this way, my work was essential for system integrating, providing real-time diagnostics, fault monitoring, and configurable output control.
+In the 2023 FSAE Season as a member of Queen's Formula, I contributed in the design, development, and implementation of the software interface to integrate our Power Distribution Module (MoTeC PDM15) with our racecar’s Controller Area Network (CAN). This module was responsible for regulating power to critical systems and reading sensor values. My work focused on early development and of the C++ library, which was further built ontop of and refined by other team members integrating CAN from the ECU and a custom STM32 dashboard PCB. In this way, my work was essential for the car's low voltage system integration and safety fault monitoring.
 
-This report provides a detailed account of the software insights, its integration with the PDM15, and its implementation in the CAN Abstraction Layer (CAL) which was finalized by co-members.
+This report provides a detailed account of the software insights, its integration with the PDM15, and its implementation in the CAN Abstraction Layer (CAL).
 
 ---
 
@@ -24,7 +22,7 @@ The library was designed to:
 - Parse incoming CAN messages from the PDM15 and decode data values (e.g., voltages, currents, fault states).
 - Provide an abstraction layer that allowed other team members working on the dashboard to interface with the PDM15 without needing to understand its internal CAN messaging protocols.
 
-While on the electrical team this year, I also helped map out, design, and manufacture  the vehicle’s wiring harness, including the CAN bus wiring. I collaborated closely with them to ensure the software functioned seamlessly in the larger system. This included testing CAN message updates using a Mock ECU and troubleshooting issues.
+While on the electrical team this year, I also helped map out, design, and manufacture the vehicle’s wiring harness, including the CAN bus wiring. I collaborated closely with the rest of the team to ensure the software functioned seamlessly with the hardware in the in the larger system. This included testing control signals using a Mock ECU and troubleshooting issues.
 
 ---
 ## Photo/Video Gallery
@@ -32,14 +30,14 @@ While on the electrical team this year, I also helped map out, design, and manuf
 <script async src="//www.instagram.com/embed.js"></script>
 
 ![](../assets/img/qfsae2023/4.jpg)
-![](../assets/img/qfsae2023/7.jpg)
+
 --- 
 
 ## Technical Implementation
 
 ### Overview of the PDM15 CAN Interface
 
-The PDM15 transmits and receives CAN messages at a configurable bitrate (250 kbps, 500 kbps, or 1 Mbps). Each CAN message carries 8 bytes of data, where specific bytes and bits represent different outputs, voltages, currents, and fault statuses. The software implementation was tailored to the PDM15's specific CAN message structure as detailed in its [documentation](https://www.motec.com.au/hessian/uploads/PDM_User_Manual_3a926f869d.pdf).
+The PDM15 transmits and receives CAN messages carrying 8 bytes of data, where specific bytes and bits represent different outputs, voltages, currents, and fault statuses. The software implementation was tailored to the PDM15's specific CAN message structure and multiplicative constants as detailed in its [documentation](https://www.motec.com.au/hessian/uploads/PDM_User_Manual_3a926f869d.pdf).
 
 #### CAN Data Mappings
 
@@ -79,16 +77,16 @@ This structure allowed the software to generalize CAN message decoding, enabling
 
 ### Library Architecture
 
-The library, implemented under the namespace `CAL::DATA_PDM` used an object-oriented approach to represent and manage the PDM’s inputs, outputs, and internal states. The key components of the library included:
+The library, implemented under the namespace `CAL::DATA_PDM` used an object-oriented approach to represent and manage the PDM’s inputs, outputs, and internal states. The key features of the library included:
 
-#### 1. **CAN Message Parsing**
+#### 1. **CAN Message Parsing (Outbound Signal from PDM)**
 
 Functions parsed incoming CAN messages and extract the required data fields. For example, extracting the throttle potentiometer voltage involved:
 
 - Identifying the CAN ID (`0x7F0`).
 - Locating Byte 0 in the payload.
 - Applying the bitmask (`0xFF`).
-- Scaling the raw data using the multiplier (`0.2`).
+- Scaling the raw data using the multiplier (`0.2`) from the documentation.
 
 ```cpp
 float parseThrottleVoltage(const CAN_msg_t &msg) {
@@ -97,9 +95,9 @@ float parseThrottleVoltage(const CAN_msg_t &msg) {
 }
 ```
 
-This function ensured consistent and accurate decoding of the throttle voltage, which was critical information for the driver on the dashboard, and the pit crew for debugging and real-time data monitoring.
+These functions continuously decoded critical information for the driver on the dashboard and the pit crew used for debugging and real-time data monitoring.
 
-#### 2. **CAN Message Construction**
+#### 2. **CAN Message Construction (Inbound Signal to PDM)**
 
 Constructing outgoing CAN messages required encoding data into the appropriate bytes and applying scaling factors. For example, updating the fuel pump’s output voltage involved:
 
@@ -116,7 +114,7 @@ This abstraction allowed other developers to control outputs without delving int
 
 #### 3. **Fault Monitoring**
 
-The library continuously monitored fault flags (e.g., over-current or under-voltage) by decoding status bytes from the PDM. For instance, a fault in the throttle body’s current output (Byte 6) was flagged as:
+The library continuously monitored fault flags (e.g., over-current or under-voltage) accross the sensor suite by decoding status bytes from the PDM. For instance, a fault in the throttle body’s current output (Byte 6) was flagged as:
 
 ```cpp
 bool checkThrottleBodyFault(const CAN_msg_t &msg) {
@@ -130,62 +128,97 @@ To further support real-time diagnostics, I developed a standalone diagnostics t
 
 The objective of this sub-project was to create a portable and efficient solution for capturing and printing CAN messages in real-time, providing engineers with visibility into the PDM15's operation without requiring additional specialized hardware.
 
-##### Implementation Details
+### 4. **Real-Time Diagnostics**: CAL-Integrated CAN Monitoring Tool
 
-- **Hardware Setup**:  
-  The Seeed Studio CAN shield was mounted on an Arduino Uno, with the MCP2515 CAN controller configured to communicate on the same CAN bitrate as the PDM15 (e.g., 500 kbps). This setup provided a compact, easy-to-deploy interface for capturing CAN messages.
+To enhance real-time diagnostics during racecar development, I engineered a standalone PDM CAN monitoring tool leveraging a **Seeed Studio CAN Shield** and the **CAL (CAN Abstraction Layer) library**. This tool enabled structured decoding of PDM messages and delivered immediate insight into system behavior without requiring a laptop or advanced data logger.
 
-- **Software Development**:  
-  Using the Seeed Studio CAN library, I wrote a program to initialize the CAN shield, read incoming messages, and output their data to the serial monitor. Key features of the program included:
-  - Decoding CAN IDs and payloads.
-  - Printing real-time data such as voltages, currents, and fault flags.
-  - Handling all incoming messages and displaying raw data for debugging.
+The goal of this tool was to provide engineers with a **portable**, **interpretable**, and **real-time** view of CAN traffic to and from the PDM, decoding meaningful fields such as voltages and currents using MoTeC calibration constants and formats.
+
+**Hardware Setup**  
+- Arduino Uno + Seeed Studio CAN Shield (MCP2515, 8 MHz)
+- Connected to a shared CAN bus running at **500 kbps**
+- Powered via USB for portability during vehicle testing
 
 ```cpp
-  #include <mcp_can.h>
-  #include <SPI.h>
+#include <mcp_can.h>
+#include <SPI.h>
+#include "cal.hpp"
 
-  MCP_CAN CAN(10); // Set CS pin
+MCP_CAN CAN(10);  // CS pin
+CAL::CAL cal;     // CAL object
 
-  void setup() {
-      Serial.begin(115200);
-      while (CAN.begin(MCP_ANY, 500000, MCP_8MHZ) != CAN_OK) {
-          Serial.println("CAN init failed, retrying...");
-          delay(1000);
-      }
-      Serial.println("CAN initialized successfully");
-  }
+void printFloatVar(const char* label, const CAL::data& dataField) {
+    float value;
+    if (cal.returnVar(dataField, value) == 0) {
+        Serial.print(label);
+        Serial.print(": ");
+        Serial.println(value, 3);
+    }
+}
 
-  void loop() {
-      unsigned char len = 0;
-      unsigned char buf[8];
-      if (CAN.checkReceive() == CAN_MSGAVAIL) {
-          CAN.readMsgBuf(&len, buf);
-          unsigned long canId = CAN.getCanId();
+void setup() {
+    Serial.begin(115200);
+    while (CAN.begin(MCP_ANY, 500000, MCP_8MHZ) != CAN_OK) {
+        Serial.println("CAN init failed, retrying...");
+        delay(1000);
+    }
+    Serial.println("CAN initialized successfully");
+}
 
-          Serial.print("CAN ID: 0x");
-          Serial.print(canId, HEX);
-          Serial.print(" Data: ");
-          for (int i = 0; i < len; i++) {
-              Serial.print(buf[i], HEX);
-              Serial.print(" ");
-          }
-          Serial.println();
-      }
-  }
+void loop() {
+    unsigned char len = 0;
+    unsigned char buf[8];
+
+    if (CAN.checkReceive() == CAN_MSGAVAIL) {
+        CAN.readMsgBuf(&len, buf);
+        unsigned long canId = CAN.getCanId();
+
+        // Build CAL-compatible message
+        CAL::CAN_msg_t msg;
+        msg.id = canId;
+        msg.len = len;
+        for (int i = 0; i < len; i++) {
+            msg.data[i] = buf[i];
+        }
+
+        // Decode and update CAL internal state
+        if (cal.updatePackage(msg) == 0) {
+            Serial.print("Received 0x");
+            Serial.println(canId, HEX);
+
+            if (canId == CAL::MOTEC_ID::PDM_1) {
+                printFloatVar("ThrottlePot V", CAL::DATA_PDM::ThrottlePotentiometerVoltage);
+                printFloatVar("Battery V", CAL::DATA_PDM::BatteryVoltage);
+                printFloatVar("Fuel Pump I", CAL::DATA_PDM::FuelPumpCurrent);
+                printFloatVar("Fuel Pump V", CAL::DATA_PDM::FuelPumpVoltage);
+                printFloatVar("Kill Switch V", CAL::DATA_PDM::KillSwitchVoltage);
+                printFloatVar("Throttle Body I", CAL::DATA_PDM::ThrottleBodyCurrent);
+                printFloatVar("Throttle Body V", CAL::DATA_PDM::ThrottleBodyVoltage);
+                Serial.println("---");
+            }
+
+            if (canId == CAL::MOTEC_ID::PDM_2) {
+                printFloatVar("Fuel Injector I", CAL::DATA_PDM::FuelInjectorCurrent);
+                printFloatVar("Fuel Injector V", CAL::DATA_PDM::FuelInjectorVoltage);
+                Serial.println("---");
+            }
+        } else {
+            Serial.print("Unhandled CAN ID: 0x");
+            Serial.println(canId, HEX);
+        }
+    }
+}
 ```
-This tool provided real-time visibility into:
-- **Internal Temperature**: Validating PDM thermal stability during operation.
-- **Output Currents and Voltages**: Ensuring outputs functioned within specified parameters.
-- **Global Error States**: Detecting fault conditions such as over-current or under-voltage for immediate resolution.
 
-This tool significantly enhanced our testing workflow by:
 
-- Providing an accessible and portable solution for monitoring PDM15 communication.
-- Simplifying the debugging process for CAN wiring and configuration issues.
-- Reducing time spent diagnosing faults, allowing for faster iterations during development.
+#### Benefits to Development Workflow
 
-This sub-project was a critical addition to the real-time diagnostics framework, enabling the team to validate and optimize the PDM15's integration into the racecar effectively.
+- **Structured Decoding**: Uses CAL to convert raw data into interpretable, engineering-accurate units.
+- **Real-Time Feedback**: Helps engineers instantly validate PDM outputs during bench testing.
+- **Fault Insight**: Flags under-voltage, over-current, or disconnected subsystems on the fly.
+
+
+This CAL-integrated diagnostic tool became a vital part of our real-time validation framework, reducing diagnosis time and enabling the team to **rapidly iterate and debug the PDM15 integration** into the vehicle during the pre-season.
 
 ---
 
@@ -199,23 +232,20 @@ To ensure the system remained stable when CAN messages were delayed or lost, def
 float throttleVoltage = (timeout) ? 0.0f : parseThrottleVoltage(msg);
 ```
 
-#### Scaling and Accuracy
-
-Certain data points, such as currents and voltages, required precise scaling for accurate monitoring. I used floating-point arithmetic and verified the scaling factors against PDM diagnostic outputs.
-
 #### Debugging Complex Faults
 
-Some faults were intermittent, requiring extensive logging of CAN messages. I wrote logging utilities to capture all incoming and outgoing CAN data, aiding in the identification of root causes.
+Some faults were intermittent and brief, requiring extensive logging and review of CAN messages. I wrote a logging utility to continuously monitor the messages and have any odd results (outside of expected ranges) persist untilk review, which aided in the identification of issues.
 
 ---
 
-## Collaboration with the Electrical Team
+## Collaboration with the Electrical Team in Q23
 
 While my focus was on the software, I collaborated with the electrical engineers during system integration. This included:
 
-- **Verifying CAN Wiring**: Ensured the wiring adhered to MoTeC’s CAN bus specifications, including proper use of terminating resistors.
+- **Assembly of Wiring Loom**: Ensured the wiring adhered to MoTeC’s CAN bus specifications, including proper use of terminating resistors. Followed the competition rules closely during the assembly process.
 - **Testing Outputs**: Assisted in debugging output channels by sending test CAN messages from my software to toggle outputs (e.g., fuel pumps, fans).
 - **Fault Simulation**: Simulated fault conditions (e.g., short circuits) to validate the PDM’s fault-handling logic.
+- **Collaboration with Electrical Systems Lead**: Communicated with my mentor, Ethan, to gain crucial insights into the overall design of the car's electrical system and ensure compliance with competition guidelines.
 
 I also communicated with the dashboard team to assess their requirements.
 
@@ -230,7 +260,7 @@ Chisholm's](https://github.com/Jchisholm204) CAN Bus Abstraction Layer (CAL)
 The developed software helped the team by integrating the PDM into the ECU and dashboard. This enabled power management and diagnostics for our racecar:
 
 1. **Reliability**: The PDM15 handled all power distribution seamlessly, with software-controlled fault recovery.
-2. **Real-Time Insights**: Drivers and engineers could monitor critical metrics (e.g., battery voltage, output currents) in real-time via the dashboard.
+2. **Real-Time Insights**: Drivers and engineers could monitor critical metrics fromt he PDM (e.g., battery voltage, output currents) in real-time via the dashboard.
 3. **Reduced Debugging Time**: The diagnostic capabilities of the library helped identify and resolve wiring or configuration issues quickly.
 
 The reusable C++ library became a cornerstone of our vehicle’s electrical system, enabling future team members to build upon a reliable and extensible foundation.
@@ -239,5 +269,5 @@ The reusable C++ library became a cornerstone of our vehicle’s electrical syst
 
 ## Conclusion
 
-This project highlighted the importance of working collaboratively on robust software to enable advanced hardware like the PDM15 to perform in a high-stakes motorsport environment. By working on the development of a flexible and feature-rich library, I contributed to the overall success of our Formula SAE vehicle.
+This project highlighted the importance of working collaboratively on robust software to enable advanced hardware like the PDM15 to perform in a high-stakes motorsport environment. By working on the development of a flexible and feature-rich library, I contributed to the overall success of our Formula SAE vehicle for years to come.
 
