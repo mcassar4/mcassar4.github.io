@@ -2,24 +2,23 @@
 layout: post
 title: "Understanding DNS: Building a Client"
 date: 2025-02-21 14:30:00 +0000
-description: "Exploring the educational journey of building a simple DNS client in Python to understand the internals of DNS queries and responses, and the broader internet process."
+description: "Building a simple DNS client in Python to understand the internals of DNS queries and responses, and the broader internet process."
 img: ../img/dns/dns.png
 tags: [DNS, Networking, Education, Python]
 ---
 
-# Understanding DNS: A Deep Dive into Building a Simple DNS Client
-
 ## Introduction
 
-In my quest to understand how the internet works at a fundamental level, DNS (Domain Name System) plays a critical role as the "phonebook" of the web. This post covers an educational project where I built a simple DNS client in Python. The goal was not just to send and receive DNS queries but also to decode and pretty-print responses in a manner similar to `nslookup`.
+As part of my coursework in Computer Networking, I extended my learning my embarking on a challenge to build a DNS client in Python to gain some valueable experience trying to encode, send, receive, and decode DNS queries in a manner similar to the program `nslookup`. This was inspired by the fact that I worked with many different protocols and RFC and SMPTE protocols in my professional internship, but am not able to discuss the applications of them. I would like this to be an example of my ability to read technical protocol documentation and devlelop software ontop of it.
 
-This project serves as a learning tool to explore the intricacies of DNS based on RFC 1035. It highlights the process of building a query, parsing the response, and understanding how DNS records (like A and CNAME) are encoded.
+This project serves as a learning tool to explore the intricacies of DNS based on RFC 1035. It highlights the process of building a query, parsing the response, and understanding how DNS records (like A and CNAME) are encoded. T
 
 ---
 
 ## Purpose
 
 The primary purpose of this project is educational:
+- **Build Applications Atop Protocols:** Understand how to interpret techincal documentation and use it to build useful software.
 - **Research & Exploration:** Delving into the underlying process of how DNS queries and responses are structured.
 - **Understanding the Internet:** Gaining insight into how domain names translate into IP addresses and how information can be queried from DNS servers.
 - **Practical Coding Experience:** Implementing networking code in Python to interact with real-world DNS servers.
@@ -75,6 +74,5 @@ Note: The code is heavily commented to explain its workings for educational purp
 
 ## Conclusion
 
-Building a simple DNS client served as an educational exercise in understanding how domains are resolved into IP addresses. The project not only reinforced network programming practices in Python but also provided an in-depth look at how the internet functions from a protocol standpoint. I hope this inspiration encourages others to explore and research further into the hidden processes that power our daily online activities.
-
+For my work here, I received extra credit from my professor and went above and beyond the scope of the course.
 
