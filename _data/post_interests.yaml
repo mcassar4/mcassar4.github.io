@@ -8,7 +8,7 @@ posts:
   - title: "Payload Delivery Mechanism for a Drone"
     filename: "2024-02-02-dronedrop.markdown"
     interest: 3
-  - title: "Cagey CSP Solver for Constraint Satisfaction Problems"
+  - title: "Constraint Satisfaction Problem AI"
     filename: "2023-01-01-CISC352-Cagey.markdown"
     interest: 4
   - title: "Understanding DNS: Building a Client"
