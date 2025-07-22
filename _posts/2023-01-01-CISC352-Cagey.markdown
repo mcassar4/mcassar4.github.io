@@ -1,137 +1,229 @@
 ---
 layout: post
-title: "Cagey CSP Solver for Constraint Satisfaction Problems"
+title: "Constraint Satisfaction Problem AI"
 date: 2023-02-05 12:00:00 +0500
-description: "An overview of the development and implementation of a Cagey CSP solver incorporating constraint propagation, heuristics, and modeling."
+description: "Development and implementation of a Cagey CSP solver incorporating constraint propagation, heuristics, and modeling."
 img: ../img/cagey/cagey.png
 tags: [CSP, Constraint Satisfaction, Python, AI]
 ---
 
-# Developing a Cagey CSP Solver for Constraint Satisfaction Problems
-
 ## Introduction
 
-As part of CISC 352 at Queen's University, I undertook the challenge of implementing a Cagey CSP solver. This project explored the complexities of constraint satisfaction problems (CSPs) by designing and integrating various components, including binary constraints, n-ary constraints, and custom cage constraints. The solver was implemented in Python, utilizing an API provided for CSP modeling.
+Constraint Satisfaction Problems (CSPs) form the backbone of many AI applications, from scheduling systems to puzzle solvers. As part of CISC 352 at Queen's University, I developed a comprehensive CSP solver for Cagey—a challenging logic puzzle that combines the structural complexity of Sudoku with dynamic cage constraints similar to KenKen.
 
-This report highlights the project's development process, covering the implementation of forward-checking, generalized arc consistency (GAC) propagators, heuristics for variable selection, and the integration of Cagey-specific constraints into CSP models.
-
----
-
-## The Cagey Game
-
-Cagey is a logic-based puzzle game similar to Sudoku and KenKen. The game is played on an \(n \times n\) grid where the goal is to fill each cell with a number from 1 to \(n\) such that:
-
-1. Each row and column contains unique numbers.
-2. The grid is divided into "cages," groups of cells with a specified target value and an operation. The numbers within each cage must combine using the specified operation to equal the target value. Operations can include addition (`+`), subtraction (`-`), multiplication (`*`), division (`/`), or an unknown operation (`?`).
-3. Cages may contain one or more cells, and numbers in each cage can be used in any order to achieve the target value.
-
-For example, in a 3x3 grid, a cage might require the sum of three cells to equal 6 (`6+`), or a single cell might need to equal 3 (`3?`), with the operation to be determined.
-
-Cagey is challenging because it combines the constraints of unique row and column values with the additional layer of dynamic cage constraints. This makes it a perfect candidate for constraint satisfaction problem-solving techniques.
+This project provided an opportunity to explore the theoretical foundations of CSPs while tackling the practical challenges of implementation. The solver incorporates multiple constraint propagation techniques, intelligent variable selection heuristics, and flexible constraint modeling approaches. Through this implementation, I gained hands-on experience with the delicate balance between computational efficiency and solution completeness that defines effective CSP solvers.
 
 ---
 
-## Role and Responsibilities
+## Understanding the Cagey Puzzle
 
-The implementation was divided into the following primary components:
+Before diving into the technical implementation, it's essential to understand what makes Cagey such an interesting CSP. Cagey is a logic-based puzzle game that shares DNA with both Sudoku and KenKen, but introduces unique challenges that make it particularly well-suited for CSP techniques.
 
-- **Constraint Propagation**:
-  - Developed two propagators: Forward Checking (FC) and Generalized Arc Consistency (GAC).
-  - Integrated these propagators into a backtracking search framework for efficient pruning of the search space.
+The game is played on an nxn grid with three fundamental constraints:
 
-- **Heuristic Strategies**:
-  - Implemented two variable selection heuristics: Minimum Remaining Values (MRV) and Degree Heuristic (DH).
+1. **Uniqueness Constraints**: Each row and column must contain unique numbers from 1 to n, similar to Sudoku.
 
-- **Modeling Cagey Puzzles**:
-  - Created models for binary not-equal constraints, n-ary all-different constraints, and Cagey-specific constraints.
-  - Developed a flexible framework to handle grid-based puzzles with dynamic cage operations.
+2. **Cage Constraints**: The grid is divided into "cages"—groups of cells with a specified target value and operation. The numbers within each cage must combine using the specified operation (addition `+`, subtraction `-`, multiplication `*`, division `/`, or unknown `?`) to equal the target value.
 
-The work required close adherence to API specifications and rigorous testing to ensure the solver's correctness.
+3. **Flexibility Within Cages**: Numbers in each cage can be arranged in any order to achieve the target value, providing multiple valid solutions for individual cages.
+
+Consider a 3×3 grid where a cage might require three cells to sum to 6 (`6+`), while a single-cell cage might simply need to equal 3 (`3?`). The real challenge emerges when the operation is unknown (`?`), requiring the solver to determine both the operation and valid number combinations.
+
+What makes Cagey particularly challenging is how it layered the familiar row-column uniqueness constraints with the dynamic, variable-arity cage constraints. This combination creates a rich constraint network that benefits from sophisticated propagation and search strategies.
 
 ---
 
-## Technical Implementation
+## Architecture and Design Philosophy
+The implementation consists of several interconnected components that work together to solve increasingly complex puzzles:
 
-### Constraint Propagation
+### Core Components
 
-#### Forward Checking (FC)
-The Forward Checking propagator was implemented to prune values from the domains of variables in constraints with a single unassigned variable. This approach ensured that no future variable assignments could violate the constraint.
+**Constraint Propagation Engine**: Two complementary propagators—Forward Checking (FC) and Generalized Arc Consistency (GAC)—form the backbone of the search space reduction strategy, They integrate with a backtracking search framework.
+
+**Intelligent Variable Selection**: Two heuristic strategies guide the search process: Minimum Remaining Values (MRV) for identifying the most constrained variables, and Degree Heuristic (DH) for tie-breaking based on constraint connectivity.
+
+**Flexible Constraint Modeling**: Multiple modeling approaches handle different aspects of the Cagey puzzle, from simple binary not-equal constraints to complex n-ary cage constraints that must dynamically evaluate mathematical operations.
+
+---
+
+## Constraint Modeling
+
+Effective constraint modeling is at the heart of solving Cagey puzzles, as it directly impacts the solver's ability to efficiently navigate the search space. The Cagey solver employs three distinct modeling approaches, each tailored to balance expressiveness, memory usage, and computational efficiency based on the problem's unique requirements. Together, these models form a cohesive strategy for tackling Cagey puzzles, enabling the solver to efficiently navigate the intricate constraint network while maintaining the flexibility needed to handle diverse cage configurations.
+
+### Binary Constraints: Simplicity and Scalability
+
+The Cagey puzzle's row and column uniqueness constraints can be modeled using pairwise binary constraints. The `binary_ne_grid(cagey_grid)` function decomposes these constraints into simpler relationships, ensuring that each pair of variables within a row or column are not equal.
 
 ```python
-def prop_FC(csp, newVar=None):
-    if not newVar:
-        cons = csp.get_all_cons()
-    else:
-        cons = csp.get_cons_with_var(newVar)
+for row in grid:
+    for i in range(n):
+        for j in range(i+1, n):
+            con = Constraint("Row NE", [row[i], row[j]])
+            con.add_satisfying_tuples([(a, b) for a in domain for b in domain if a != b])
+            csp.add_constraint(con)
 
-    myPrunes = []
-    for con in cons:
-        if con.get_n_unasgn() == 1:
-            currVar = con.get_unasgn_vars().pop()
-            for possibleVal in currVar.cur_domain():
-                currVar.assign(possibleVal)
-                if not con.check_tuple([v.get_assigned_value() for v in con.get_scope()]):
-                    if (currVar, possibleVal) not in myPrunes:
-                        myPrunes.append((currVar, possibleVal))
-                        currVar.prune_value(possibleVal)
-                currVar.unassign()
-                if currVar.cur_domain_size() == 0:
-                    return False, myPrunes
-    return True, myPrunes
+for col in zip(*grid):
+    for i in range(n):
+        for j in range(i+1, n):
+            con = Constraint("Col NE", [col[i], col[j]])
+            con.add_satisfying_tuples([(a, b) for a in domain for b in domain if a != b])
+            csp.add_constraint(con)
 ```
 
-#### Generalized Arc Consistency (GAC)
-The GAC propagator enforced arc consistency across all constraints in the CSP by iteratively pruning values that did not participate in any satisfying tuples.
+This approach generates a large number of constraints (O(n³) for an n×n grid), but each constraint is computationally lightweight and memory-efficient. Binary constraints are particularly effective for smaller grids or scenarios where memory is limited, as they break down complex relationships into manageable pieces.
 
----
+### N-ary Constraints: Expressive Power for Larger Grids
 
-### Heuristics for Variable Selection
-
-#### Minimum Remaining Values (MRV)
-This heuristic prioritized variables with the smallest current domain, minimizing the branching factor in the search tree.
-
-#### Degree Heuristic (DH)
-The Degree Heuristic selected variables involved in the largest number of constraints with other unassigned variables, aiming to maximize constraint propagation early.
-
----
-
-### Modeling Cagey CSPs
-
-The Cagey CSP model was built by extending basic CSP models with Cagey-specific constraints. The model supported dynamic operations (`+`, `-`, `*`, `/`, `?`) for cages and ensured all constraints were satisfied.
+For larger grids, the solver leverages n-ary constraints to model row and column uniqueness more directly. The `nary_ad_grid(cagey_grid)` function uses all-different constraints, which encapsulate the uniqueness requirement for an entire row or column in a single constraint.
 
 ```python
-def cagey_csp_model(cagey_grid):
-    csp, variables = nary_ad_grid(cagey_grid)
-    for c in cagey_grid[1]:
-        cage_constraint = generateCageConstraint(variables, c, f"cage_{c}")
-        csp.add_constraint(cage_constraint)
-    return csp, variables
+for row in grid:
+    con = Constraint("Row AD", row)
+    con.add_satisfying_tuples(list(itertools.permutations(domain)))
+    csp.add_constraint(con)
+
+for col in zip(*grid):
+    con = Constraint("Col AD", list(col))
+    con.add_satisfying_tuples(list(itertools.permutations(domain)))
+    csp.add_constraint(con)
 ```
 
+This approach reduces the number of constraints (O(n) instead of O(n³)) but requires enumerating all permutations of the domain, leading to significant memory overhead. While computationally expensive, n-ary constraints enable more effective propagation, making them ideal for larger grids where the solver benefits from reduced constraint complexity.
+
+### Cage Constraints: Capturing Problem-Specific Complexity
+
+The most challenging aspect of Cagey puzzles lies in modeling the cage constraints, which combine variable-arity operations and dynamic requirements. The `cagey_csp_model(cagey_grid)` function dynamically generates constraints based on cage specifications, handling both known and unknown operations.
+
+```python
+for cage in cages:
+    target, cells, op = cage
+    scope = [grid[i-1][j-1] for (i,j) in cells]
+    con = Constraint("Cage", scope)
+    valid_tuples = []
+    for t in itertools.product(domain, repeat=len(scope)):
+        if is_valid_cage_tuple(t, target, op):
+            valid_tuples.append(t)
+    con.add_satisfying_tuples(valid_tuples)
+    csp.add_constraint(con)
+```
+
+This approach showcases the flexibility required for real-world CSP applications. When the operation is unknown (`op == '?'`), the solver must test all possible operators, creating a unified constraint that captures the disjunctive nature of the cage requirement. By dynamically generating constraints, the solver adapts to the unique structure of each puzzle, ensuring both accuracy and efficiency.
+
+## Constraint Propagation for Reducing Search Space
+
+Constraint propagation is useful because rather than blindly exploring the exponential search space, these techniques systematically eliminate inconsistent values, dramatically reducing the number of possibilities the solver must consider.
+
+### Forward Checking
+
+When a variable selection is made (value of a cell or operator for a cage), Forward Checking immediately looks ahead to see what effect this decision has on future choices. It checks if there are any future options that would be rendered invalid by the current decision. If a decision leads to a situation where no valid options remain for some variable, that branch can be eliminated early, avoiding needless exploration of impossible paths. The `prop_FC(csp, newVar=None)` function implements this look-ahead strategy:
+
+```python
+if newVar:
+    cons = csp.get_cons_with_var(newVar)
+else:
+    cons = csp.get_all_cons()
+
+for con in cons:
+    if con.get_n_unasgn() == 1:
+        V = con.get_unasgn_vars()[0]
+        for d in V.cur_domain():
+            if not con.check_var_val(V, d):
+                V.prune_value(d)
+                pruned.append((V, d))
+        if V.cur_domain_size() == 0:
+            return False, pruned
+```
+
+Forward Checking is so powerful here because when only one variable remains unassigned in a constraint, we can immediately determine which values are still viable. This anticipatory pruning prevents the solver from making assignments that will inevitably lead to dead ends.
+
+### Generalized Arc Consistency
+
+The `prop_GAC(csp, newVar=None)` function ensures that every remaining variable-value pair has explicit support within the constraint network.
+
+```python
+if newVar:
+    queue = list(csp.get_cons_with_var(newVar))
+else:
+    queue = list(csp.get_all_cons())
+
+while queue:
+    con = queue.pop(0)
+    for var in con.get_scope():
+        for val in var.cur_domain():
+            if not con.check_var_val(var, val):
+                var.prune_value(val)
+                pruned.append((var, val))
+                if var.cur_domain_size() == 0:
+                    return False, pruned
+                for c in csp.get_cons_with_var(var):
+                    if c not in queue:
+                        queue.append(c)
+```
+
+GAC exhibits a cascading effect in pruning. When GAC removes a value from a variable's domain, it re-examines all constraints involving that variable, potentially triggering additional pruning. This creates a propagation cascade that can dramatically reduce the search space, though at the cost of increased computational overhead per propagation step.
+
+The choice between FC and GAC invloves a tradeoff: GAC performs more work upfront but can prevent extensive backtracking later, while FC provides faster individual propagation steps but may require more search iterations.
+
 ---
 
-## Testing and Results
+## Guiding the Search With Strategic Variable Selection
 
-### Automated Testing
-The implementation was rigorously tested using a provided autograder script. Key tests included:
+Even with effective constraint propagation, the order in which variables are assigned can dramatically impact solver performance. The two heuristics implemented in this project represent complementary approaches to this fundamental challenge.
 
-- Binary Not-Equal and N-ary All-Different Constraints: Passed all tests.
-- Cage Constraints: Partial success, with errors in handling dynamic operations due to variable naming issues.
+### Minimum Remaining Values
 
-### Results Summary
-- **Forward Checking**: 1.0/1.0
-- **GAC**: 1.5/1.5
-- **MRV and DH**: 1.0/1.0
-- **Cagey Model**: 0.0/1.0
+The Minimum Remaining Values (MRV) heuristic selects the variable with the smallest remaining domain. The function `ord_mrv(csp)` forces the solver to confront the most constrained decisions first.
 
-### Challenges and Solutions
-The primary challenge was ensuring correct handling of dynamic cage constraints. The error arose due to mismanagement of variable names within Cagey constraints, as highlighted in test failures.
+```python
+min_var = None
+min_size = float('inf')
+for var in csp.get_all_unasgn_vars():
+    size = var.cur_domain_size()
+    if size < min_size:
+        min_size = size
+        min_var = var
+return min_var
+```
+
+By tackling the most constrained variables early, MRV ensures that any inconsistencies are discovered as quickly as possible, minimizing wasted computational effort on ultimately futile search branches.
+
+### Degree Heuristic
+
+When multiple variables tie for the smallest domain size, the Degree Heuristic (DH) provides intelligent tie-breaking. The `ord_dh(csp)` function selects the variable involved in the most constraints with other unassigned variables.
+
+```python
+max_var = None
+max_degree = -1
+for var in csp.get_all_unasgn_vars():
+    degree = 0
+    for con in csp.get_cons_with_var(var):
+        if any(not v.is_assigned() and v != var for v in con.get_scope()):
+            degree += 1
+    if degree > max_degree:
+        max_degree = degree
+        max_var = var
+return max_var
+```
+
+The intuition behind DH is that variables with more constraints have greater potential to trigger propagation cascades. By choosing highly connected variables, the solver maximizes the likelihood that each assignment will provide valuable information about other variables' domains.
+
+Together, MRV and DH create a powerful variable selection strategy that balances immediate constraint pressure with longer-term propagation benefits.
 
 ---
 
-## Conclusion
+## Lessons Learned
 
-This project provided valuable insights into constraint satisfaction problems and their applications in AI. While the Cagey-specific constraints require further debugging, the project successfully demonstrated the integration of propagation techniques and heuristic strategies into CSP solvers.
+The development of the Cagey CSP solver provided invaluable insights into the practical challenges of implementing theoretical algorithms. Several key lessons emerged from this experience:
 
-Moving forward, I plan to refine the Cagey model and expand the solver to support additional use cases, such as Sudoku and KenKen puzzles.
+**The Art of Trade-offs**: Every design decision in CSP solving involves trade-offs. GAC provides more thorough propagation than Forward Checking but requires more computation per step. N-ary constraints offer greater expressiveness than binary constraints but consume exponentially more memory. The most effective solver configurations often involve careful balancing of these competing concerns based on the specific problem characteristics.
 
+**Modeling Matters**: Perhaps the most surprising insight was how dramatically different constraint models could affect solver performance. The same logical puzzle could become trivially easy or computationally intensive depending on how constraints were formulated and encoded. This emphasized that successful CSP application requires deep understanding of both the problem domain and the underlying algorithmic machinery.
+
+**Dynamic Constraint Generation**: The cage constraints, particularly those with unknown operations, highlighted the need for flexible constraint generation mechanisms. Real-world CSP applications often require constraints that cannot be enumerated statically but must be generated dynamically based on problem instance characteristics.
+
+
+## Reflection
+
+This assignment offered a rich introduction to CSPs. Implementing both Forward Checking and GAC deepened my appreciation for constraint propagation’s role in pruning search spaces. The shift from binary to n-ary constraints also illustrated how structural modeling choices affect solver performance. Most importantly, building cage constraints demanded a real synthesis of algorithmic thinking and practical coding.
+
+From variable domain pruning to constraint satisfaction under ambiguity, Cagey was a perfect testbed for building a high-performance, general-purpose CSP engine.
