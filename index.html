@@ -80,7 +80,7 @@ layout: main
 </head>
 <body>
   <div id="project-list">
-    {% for post in paginator.posts %}
+    {% for post in site.posts %}
       {% assign post_interest = site.data.post_interests.posts | where:"title", post.title | first %}
       <article class="post" data-date="{{ post.date }}" data-interest="{{ post_interest.interest | default: 0 }}">
         {% if post.img %}
@@ -102,6 +102,5 @@ layout: main
       </article>
     {% endfor %}
   </div>
-  {% include pagination.html %}
 </body>
 </html>

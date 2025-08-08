@@ -2,7 +2,7 @@ title: Manny Cassar
 description: Manny's Portfolio Blog
 permalink: ':title/'
 baseurl: ""
-url: "https://portfolio.mannytech.net" 
+url: 
 site-twitter:
 
 # Author Settings
@@ -20,10 +20,6 @@ analytics: # Google Analytics
 markdown: kramdown
 plugins:
   - jekyll-sitemap
-  - jekyll-paginate
   - jemoji
-
-paginate: 8
-paginate_path: "/page/:num"
 
 exclude: ["node_modules", "gulpfile.js", "package.json", "yarn.lock"]
