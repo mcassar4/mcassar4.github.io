@@ -14,18 +14,21 @@ posts:
   - title: "GridWorld, Policy Evaluation, Monte Carlo, and TD Control"
     filename: "2025-03-30-ReinforcementLearningA2.markdown"
     interest: 5
+  - title: "Q25 EV Telemetry System: UDP, PyQt, and Simulated Data"
+    filename: "2025-03-23-Q25Telemetry.markdown"
+    interest: 6
   - title: "Constraint Satisfaction Problem AI"
     filename: "2023-01-01-CISC352-Cagey.markdown"
-    interest: 6
+    interest: 7
   - title: "Understanding DNS: Building a Client"
     filename: "2025-02-21-dnsClient.markdown"
-    interest: 7
+    interest: 8
   - title: "Ghostbusters AI Project"
     filename: "2023-03-01-CISC-352-pacman.markdown"
-    interest: 8
+    interest: 9
   - title: "Evolutionary Optimization: Minimizing the Ackley Function"
     filename: "2025-02-09-evolutionaryAlgorithm.markdown"
-    interest: 9
+    interest: 10
   - title: "PDDL Dungeon: Treasure Hunter AI"
     filename: "2023-01-01-CISC352-PDDLDungeon.markdown"
-    interest: 10
+    interest: 11
