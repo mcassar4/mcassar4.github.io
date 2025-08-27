@@ -1,13 +1,15 @@
 ---
 layout: post  
 title: "Ghostbusters AI Project"  
-date: 2025-02-09 12:00:00 +0500  
+date: 2022-02-13 12:00:00 +0500  
 description: "Developing intelligent agents to hunt invisible ghosts in the Ghostbusters Pacman variant."  
 img: ../img/ghostbusters/thumb.png  
 tags: [AI, Pacman, Inference, Probabilistic Models]  
 
 ---
 # Ghostbusters AI: Developing Intelligent Agents to Hunt Ghosts  
+
+**NOTE: This post is under development. I would like to overhaul it to be more technical and provide a cool visualization. Lots of the code for the assignment setup was given to me many years ago, and this will take a lot of work to sort through**
 
 ## Introduction  
 
