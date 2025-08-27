@@ -1517,3 +1517,10 @@ a.newer-posts:hover {
 .sidebar .resume-download a:hover {
   background-color: #1b2d3a !important;
 }
+
+/* make code font smaller in code blocks */
+pre code,
+.highlighter-rouge pre,
+.highlight pre {
+  font-size: 0.8rem;
+}
